@@ -1,11 +1,7 @@
 import React from "react";
 
 const Footer = () => {
-  return (
-    <footer className="footer">
-      <p>© 2025 Colorful E-Commerce. All rights reserved.</p>
-    </footer>
-  );
+  return <footer>© 2025 Ecommerce App | Built with ❤️</footer>;
 };
 
 export default Footer;
