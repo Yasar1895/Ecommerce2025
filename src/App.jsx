@@ -9,59 +9,92 @@ import Carousel from "./components/Carousel";
 import "./App.css";
 
 const App = () => {
-  const [products, setProducts] = useState(productsData);
+  const [products] = useState(productsData);
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeTab, setActiveTab] = useState("All");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
 
   const categories = ["All", "Shoes", "Clothing", "Electronics", "Accessories"];
 
-  const featured = productsData.slice(0, 3);
-
-  const handleAddToCart = (product) => setCart([...cart, product]);
-  const handleRemoveFromCart = (id) => setCart(cart.filter((item) => item.id !== id));
-
-  const handleSearch = (query) => {
-    const filtered = productsData.filter((p) =>
-      p.name.toLowerCase().includes(query.toLowerCase())
+  // Filter products
+  const filtered = products.filter((p) => {
+    return (
+      (category === "All" || p.category === category) &&
+      p.name.toLowerCase().includes(search.toLowerCase())
     );
-    setProducts(activeTab === "All" ? filtered : filtered.filter(p => p.category === activeTab));
+  });
+
+  const addToCart = (product) => {
+    const exists = cart.find((item) => item.id === product.id);
+    if (exists) {
+      setCart(
+        cart.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        )
+      );
+    } else {
+      setCart([...cart, { ...product, qty: 1 }]);
+    }
   };
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    if (tab === "All") setProducts(productsData);
-    else setProducts(productsData.filter(p => p.category === tab));
+  const removeFromCart = (id) => {
+    setCart(cart.filter((item) => item.id !== id));
+  };
+
+  const updateQty = (id, qty) => {
+    if (qty < 1) return;
+    setCart(cart.map((i) => (i.id === id ? { ...i, qty } : i)));
   };
 
   return (
-    <div className="app">
-      <Header
-        cartCount={cart.length}
-        onSearch={handleSearch}
-        categories={categories}
-        onTabClick={handleTabClick}
-        activeTab={activeTab}
+    <div className="App">
+      <Header cartCount={cart.length} onSearch={setSearch} />
+
+      {/* Carousel */}
+      <Carousel items={products.slice(0, 3)} />
+
+      {/* Category Tabs */}
+      <div className="tabs">
+        {categories.map((c) => (
+          <button
+            key={c}
+            className={c === category ? "active" : ""}
+            onClick={() => setCategory(c)}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      {/* Products */}
+      <div className="grid">
+        {filtered.map((p) => (
+          <ProductCard
+            key={p.id}
+            product={p}
+            onAddToCart={addToCart}
+            onView={() => setSelectedProduct(p)}
+          />
+        ))}
+      </div>
+
+      {/* Cart */}
+      <Cart
+        cart={cart}
+        removeFromCart={removeFromCart}
+        updateQty={updateQty}
       />
-      <Carousel featured={featured} />
-      <main>
-        <div className="products-grid">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={handleAddToCart}
-              onView={setSelectedProduct}
-            />
-          ))}
-        </div>
+
+      {/* Modal */}
+      {selectedProduct && (
         <ProductModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
+          onAddToCart={addToCart}
         />
-        <Cart cartItems={cart} onRemove={handleRemoveFromCart} />
-      </main>
+      )}
+
       <Footer />
     </div>
   );
