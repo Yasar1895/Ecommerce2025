@@ -1,28 +1,25 @@
 import React from "react";
 
-const Cart = ({ cartItems, onRemove }) => {
-  const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+const Cart = ({ cart, removeFromCart, updateQty }) => {
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   return (
-    <div className="cart-page">
-      <h2>Your Cart</h2>
-      {cartItems.length === 0 ? (
-        <p>Cart is empty</p>
-      ) : (
-        <>
-          {cartItems.map((item) => (
-            <div key={item.id} className="cart-item">
-              <img src={item.image} alt={item.name} />
-              <div>
-                <h3>{item.name}</h3>
-                <p>${item.price.toFixed(2)}</p>
-                <button onClick={() => onRemove(item.id)}>Remove</button>
-              </div>
-            </div>
-          ))}
-          <h3>Total: ${total.toFixed(2)}</h3>
-        </>
-      )}
+    <div className="cart">
+      <h3>🛒 Cart</h3>
+      {cart.length === 0 ? <p>No items in cart</p> : null}
+      {cart.map((item) => (
+        <div key={item.id} className="cart-item">
+          <span>{item.name}</span>
+          <input
+            type="number"
+            value={item.qty}
+            onChange={(e) => updateQty(item.id, parseInt(e.target.value))}
+          />
+          <span>₹{item.price * item.qty}</span>
+          <button onClick={() => removeFromCart(item.id)}>❌</button>
+        </div>
+      ))}
+      <div className="cart-total">Total: ₹{total}</div>
     </div>
   );
 };
